@@ -6,22 +6,32 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY!;
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+import type { AuthResponse } from "@supabase/supabase-js";
+
 type AuthContextType = {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  signIn: (email: string, password: string) => Promise<AuthResponse>;
 };
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
+  signIn: async () => ({ data: null, error: null }),
 });
 
 export const AuthProvider = ({ children }: any) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const signIn = async (email: string, password: string) => {
+  return await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+};
 
   useEffect(() => {
     const getSession = async () => {
@@ -46,7 +56,7 @@ export const AuthProvider = ({ children }: any) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, session, loading }}>
+    <AuthContext.Provider value={{ user, session, loading, signIn }}>
       {children}
     </AuthContext.Provider>
   );
