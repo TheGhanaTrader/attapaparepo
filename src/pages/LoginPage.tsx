@@ -23,6 +23,12 @@ export default function LoginPage() {
 
   const { data, error } = await signIn(email, password);
 
+  const { data: profile } = await supabase
+  .from("profiles")
+  .select("*")
+  .eq("id", data.user.id)
+  .single();
+
   setLoading(false);
 
   if (error) {
@@ -37,10 +43,16 @@ export default function LoginPage() {
     .eq("id", data.user.id)
     .single();
 
-  if (profile?.must_change_password) {
-    window.location.href = "/change-password";
-    return;
-  }
+  if (profile.must_change_password) {
+  window.location.href = "/change-password";
+  return;
+}
+
+if (profile.role === "admin") {
+  window.location.href = "/dashboard"; // CEO
+} else {
+  window.location.href = "/sales"; // Staff
+}
 
   // 👉 Normal login
   window.location.href = "/dashboard";
