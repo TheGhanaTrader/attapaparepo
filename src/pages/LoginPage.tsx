@@ -21,47 +21,23 @@ const handleSubmit = async (e: React.FormEvent) => {
   setError('');
   setLoading(true);
 
-  const { data, error } = await signIn(email, password);
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-  // 🔥 FIRST: check login
-  if (error || !data?.user) {
-    console.log("LOGIN ERROR:", error);
-    setError(error?.message || "Login failed");
-    setLoading(false);
-    return;
-  }
-
-  // 🔥 SECOND: fetch profile AFTER login success
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", data.user.id)
-    .single();
-
-  if (profileError || !profile) {
-    console.log("PROFILE ERROR:", profileError);
-    setError("User profile not found");
-    setLoading(false);
-    return;
-  }
+  console.log("LOGIN RESULT:", data, error);
 
   setLoading(false);
 
-  // 🔥 ROLE LOGIC
-  if (profile.must_change_password) {
-    window.location.href = "/change-password";
+  if (error) {
+    setError(error.message); // 👈 shows REAL issue
     return;
   }
 
-  if (profile.role === "admin") {
-    window.location.href = "/dashboard";
-  } else {
-    window.location.href = "/sales";
-  }
+  alert("Login successful");
 };
-
-  console.log("SUPABASE URL:", import.meta.env.VITE_SUPABASE_URL);
-
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-blue-900 flex items-center justify-center p-4">
       {/* Background pattern */}
