@@ -16,46 +16,48 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setError('');
   setLoading(true);
 
   const { data, error } = await signIn(email, password);
 
-  const { data: profile } = await supabase
-  .from("profiles")
-  .select("*")
-  .eq("id", data.user.id)
-  .single();
-
-  setLoading(false);
-
-  if (error) {
-    setError('Invalid email or password. Please try again.');
+  // 🔥 FIRST: check login
+  if (error || !data?.user) {
+    console.log("LOGIN ERROR:", error);
+    setError(error?.message || "Login failed");
+    setLoading(false);
     return;
   }
 
-  // 🔥 Check profile
-  const { data: profile } = await supabase
+  // 🔥 SECOND: fetch profile AFTER login success
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", data.user.id)
     .single();
 
+  if (profileError || !profile) {
+    console.log("PROFILE ERROR:", profileError);
+    setError("User profile not found");
+    setLoading(false);
+    return;
+  }
+
+  setLoading(false);
+
+  // 🔥 ROLE LOGIC
   if (profile.must_change_password) {
-  window.location.href = "/change-password";
-  return;
-}
+    window.location.href = "/change-password";
+    return;
+  }
 
-if (profile.role === "admin") {
-  window.location.href = "/dashboard"; // CEO
-} else {
-  window.location.href = "/sales"; // Staff
-}
-
-  // 👉 Normal login
-  window.location.href = "/dashboard";
+  if (profile.role === "admin") {
+    window.location.href = "/dashboard";
+  } else {
+    window.location.href = "/sales";
+  }
 };
 
   return (
