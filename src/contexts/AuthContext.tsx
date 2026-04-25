@@ -34,6 +34,10 @@ export const AuthProvider = ({ children }: any) => {
   });
 };
 
+  const signOut = async () => {
+  await supabase.auth.signOut();
+};
+
   useEffect(() => {
     const getSession = async () => {
       const { data } = await supabase.auth.getSession();
@@ -57,7 +61,7 @@ export const AuthProvider = ({ children }: any) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn }}>
+    <AuthContext.Provider value={{ user, session, loading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
