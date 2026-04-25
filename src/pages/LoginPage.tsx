@@ -60,6 +60,8 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 };
 
+  console.log("SUPABASE URL:", import.meta.env.VITE_SUPABASE_URL);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-blue-900 flex items-center justify-center p-4">
       {/* Background pattern */}
