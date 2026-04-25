@@ -23,40 +23,30 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   const { data, error } = await signIn(email, password);
 
-  // 🔥 FIRST: check login
-  if (error || !data?.user) {
-    console.log("LOGIN ERROR:", error);
-    setError(error?.message || "Login failed");
-    setLoading(false);
+  setLoading(false);
+
+  if (error) {
+    setError('Invalid email or password. Please try again.');
     return;
   }
 
-  // 🔥 SECOND: fetch profile AFTER login success
-  const { data: profile, error: profileError } = await supabase
+  // 👇 THIS IS THE PART YOU ARE ASKING ABOUT
+
+  const { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", data.user.id)
     .single();
 
-  if (profileError || !profile) {
-    console.log("PROFILE ERROR:", profileError);
-    setError("User profile not found");
-    setLoading(false);
-    return;
-  }
-
-  setLoading(false);
-
-  // 🔥 ROLE LOGIC
   if (profile.must_change_password) {
     window.location.href = "/change-password";
     return;
   }
 
   if (profile.role === "admin") {
-    window.location.href = "/dashboard";
+    window.location.href = "/dashboard";   // CEO goes here
   } else {
-    window.location.href = "/sales";
+    window.location.href = "/sales";       // Staff goes here
   }
 };
   
