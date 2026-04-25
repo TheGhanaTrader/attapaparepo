@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Sale, Product, FairGuy } from '../lib/types';
+import { useAuth } from "../contexts/AuthContext";
 
 interface Stats {
   todaySales: number;
