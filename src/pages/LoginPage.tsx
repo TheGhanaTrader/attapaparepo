@@ -21,21 +21,43 @@ const handleSubmit = async (e: React.FormEvent) => {
   setError('');
   setLoading(true);
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+  const { data, error } = await signIn(email, password);
 
-  console.log("LOGIN RESULT:", data, error);
-
-  setLoading(false);
-
-  if (error) {
-    setError(error.message); // 👈 shows REAL issue
+  // 🔥 FIRST: check login
+  if (error || !data?.user) {
+    console.log("LOGIN ERROR:", error);
+    setError(error?.message || "Login failed");
+    setLoading(false);
     return;
   }
 
-  alert("Login successful");
+  // 🔥 SECOND: fetch profile AFTER login success
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", data.user.id)
+    .single();
+
+  if (profileError || !profile) {
+    console.log("PROFILE ERROR:", profileError);
+    setError("User profile not found");
+    setLoading(false);
+    return;
+  }
+
+  setLoading(false);
+
+  // 🔥 ROLE LOGIC
+  if (profile.must_change_password) {
+    window.location.href = "/change-password";
+    return;
+  }
+
+  if (profile.role === "admin") {
+    window.location.href = "/dashboard";
+  } else {
+    window.location.href = "/sales";
+  }
 };
   
   return (
