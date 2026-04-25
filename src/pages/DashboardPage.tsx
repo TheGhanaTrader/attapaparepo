@@ -62,14 +62,35 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: strin
     monthSales: 0, totalOutstanding: 0, lowStockCount: 0,
     totalProducts: 0, totalFairGuys: 0,
   });
+  const { user } = useAuth();
+const [role, setRole] = useState<string | null>(null);
   const [recentSales, setRecentSales] = useState<RecentSale[]>([]);
   const [lowStockItems, setLowStockItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<'today' | 'week' | 'month'>('today');
 
   useEffect(() => {
+  const checkRole = async () => {
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (data?.role !== "admin") {
+      // ❌ BLOCK STAFF
+      window.location.href = "/sales";
+      return;
+    }
+
+    setRole(data.role);
     loadData();
-  }, []);
+  };
+
+  checkRole();
+}, [user]);
 
   const loadData = async () => {
     const today = new Date().toISOString().split('T')[0];
